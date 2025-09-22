@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +25,8 @@ public class Usuario {
     private Long idUsuario;
 
     private String nombreCompleto;
+    @Email
+    private String email;
     private String password;
     private String fechaNacimiento;
     private String estado;
