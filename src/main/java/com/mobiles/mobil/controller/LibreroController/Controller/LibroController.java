@@ -1,6 +1,4 @@
 package com.mobiles.mobil.controller.LibreroController.Controller;
-
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,6 +24,7 @@ import com.mobiles.mobil.model.Dto.LibroDTO;
 import com.mobiles.mobil.model.entity.Libro;
 import com.mobiles.mobil.model.entity.Usuario;
 import com.mobiles.mobil.repository.LibroRepository;
+import com.mobiles.mobil.controller.LoginController.LoginHeaders;
 import com.mobiles.mobil.service.service.AuthService;
 import com.mobiles.mobil.service.service.LibroService;
 
@@ -46,7 +45,7 @@ public class LibroController {
     // CREATE - Solo EMPRESA (gestión de ficha bibliográfica)
     @PostMapping
     public ResponseEntity<LibroDTO> create(
-            @RequestHeader("X-Session-Id") String sessionId,
+            @RequestHeader(LoginHeaders.SESSION_HEADER) String sessionId,
             @RequestBody LibroDTO libroDTO) throws ServiceException {
         
         Usuario usuario = authService.validar(sessionId);
@@ -61,7 +60,7 @@ public class LibroController {
     // READ ALL - Ambos roles (catálogo para CLIENTE, gestión para EMPRESA)
     @GetMapping
     public ResponseEntity<List<LibroDTO>> findAll(
-            @RequestHeader("X-Session-Id") String sessionId) throws ServiceException {
+            @RequestHeader(LoginHeaders.SESSION_HEADER) String sessionId) throws ServiceException {
         
         authService.validar(sessionId); // Solo valida sesión activa
         List<LibroDTO> libros = libroService.findAll();
@@ -71,7 +70,7 @@ public class LibroController {
     // READ BY ID - Ambos roles
     @GetMapping("/{id}")
     public ResponseEntity<LibroDTO> findById(
-            @RequestHeader("X-Session-Id") String sessionId,
+            @RequestHeader(LoginHeaders.SESSION_HEADER) String sessionId,
             @PathVariable Long id) throws ServiceException {
         
         authService.validar(sessionId); // Solo valida sesión activa
@@ -82,7 +81,7 @@ public class LibroController {
     // UPDATE - Solo EMPRESA (modificar ficha bibliográfica)
     @PutMapping("/{id}")
     public ResponseEntity<LibroDTO> update(
-            @RequestHeader("X-Session-Id") String sessionId,
+            @RequestHeader(LoginHeaders.SESSION_HEADER) String sessionId,
             @PathVariable Long id,
             @RequestBody LibroDTO libroDTO) throws ServiceException {
         
@@ -98,7 +97,7 @@ public class LibroController {
     // DELETE - Solo EMPRESA + validar relaciones
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @RequestHeader("X-Session-Id") String sessionId,
+            @RequestHeader(LoginHeaders.SESSION_HEADER) String sessionId,
             @PathVariable Long id) throws ServiceException {
         
         Usuario usuario = authService.validar(sessionId);
@@ -113,7 +112,7 @@ public class LibroController {
 
 @PostMapping("/{id}/imagen")
 public ResponseEntity<String> uploadImage(
-        @RequestHeader("X-Session-Id") String sessionId,
+        @RequestHeader(LoginHeaders.SESSION_HEADER) String sessionId,
         @PathVariable Long id,
         @RequestParam("file") MultipartFile file) {
     try {

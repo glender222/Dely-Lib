@@ -34,7 +34,6 @@ public class Carrito {
     private Double precioUnitario;
     private Integer cantidad;
 
-    // getters y setters
 }
 
 

@@ -1,9 +1,13 @@
 package com.mobiles.mobil.model.Dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
 public class LoginRequest {
- private String email;
- private String password;
+    @NotBlank(message = "El email es requerido")
+    private String email;
+
+    @NotBlank(message = "La contraseña es requerida")
+    private String password;
 }

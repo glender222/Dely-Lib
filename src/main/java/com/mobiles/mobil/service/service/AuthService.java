@@ -35,7 +35,7 @@ public class AuthService {
         Usuario u = new Usuario();
         u.setNombreCompleto(req.getNombreCompleto());
         u.setEmail(req.getEmail());
-        u.setPassword(req.getPassword()); // texto plano por simplicidad
+        u.setPassword(req.getPassword()); 
         u.setRol("CLIENTE");
         u.setEstado("ACTIVO");
         u.setFechaNacimiento(req.getFechaNacimiento());
@@ -52,7 +52,7 @@ public class AuthService {
         Sesion s = new Sesion();
         s.setIdSesion(UUID.randomUUID().toString());
         s.setUsuario(u);
-        s.setExpiraEn(LocalDateTime.now().plusDays(7)); // opcional
+        s.setExpiraEn(LocalDateTime.now().plusDays(7));
         s.setActivo("1");
         sesionRepository.save(s);
 
@@ -64,7 +64,7 @@ public class AuthService {
         return res;
     }
 
-    /** Logout: desactiva la sesión */
+    /** Logout */
     @Transactional
     public void logout(String sessionId) {
         Optional<Sesion> s = sesionRepository.findById(sessionId);

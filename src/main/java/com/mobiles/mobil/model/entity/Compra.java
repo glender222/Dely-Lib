@@ -26,7 +26,7 @@ public class Compra {
     @ManyToOne
     @JoinColumn(name = "idUsuario")
     private Usuario usuario;
-
+    
     private String direccionEnvio;
     private String distrito;
     private String calle;
@@ -36,5 +36,5 @@ public class Compra {
     private String fechaEntrega;
     private String estadoProcesoCompra; // PAGADO, ENVIADO, ENTREGADO
 
-    // getters y setters
+
 }
