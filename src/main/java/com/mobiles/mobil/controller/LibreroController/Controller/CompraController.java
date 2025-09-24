@@ -184,4 +184,45 @@ public class CompraController {
         compraService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+
+
+
+
+
+
+// Nuevo endpoint para crear compra directamente con pago
+@PostMapping("/create-with-payment")
+public ResponseEntity<?> createCompraWithPayment(
+        @RequestHeader("X-Session-Id") String sessionId,
+        @RequestBody CompraDTO compraDTO) throws ServiceException {
+    
+    try {
+        Usuario usuario = authService.validar(sessionId);
+        
+        if (!"CLIENTE".equals(usuario.getRol())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Asegurar que está creando SU compra
+        compraDTO.setIdUsuario(usuario.getIdUsuario());
+        compraDTO.setEstadoProcesoCompra("PENDIENTE"); // Estado inicial antes del pago
+        
+        // Crear compra
+        CompraDTO created = compraService.create(compraDTO);
+        
+        // Retornar info para crear el pago
+        return ResponseEntity.ok(Map.of(
+            "compra", created,
+            "message", "Compra creada. Usa el endpoint /api/v1/mercadopago/create-preference para generar el pago"
+        ));
+        
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Error: " + e.getMessage());
+    }
+}
+
+
+
 }

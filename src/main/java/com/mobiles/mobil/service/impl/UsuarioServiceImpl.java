@@ -3,12 +3,15 @@ package com.mobiles.mobil.service.impl;
 import java.util.List;
 
 import org.hibernate.service.spi.ServiceException;
+import org.springframework.stereotype.Service;
 
 import com.mobiles.mobil.model.Dto.UsuarioDTO;
 import com.mobiles.mobil.model.mapper.UsuarioMapper;
 import com.mobiles.mobil.repository.UsuarioRepository;
 import com.mobiles.mobil.service.service.UsuarioService;
 
+
+@Service
 public class UsuarioServiceImpl implements UsuarioService{
   
     private final UsuarioRepository  usuarioRepository;
