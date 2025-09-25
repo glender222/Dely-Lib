@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.core.io.ByteArrayResource;
@@ -49,19 +51,65 @@ public class LibroController {
 
     // CREATE - Solo EMPRESA
     @PostMapping
-    public ResponseEntity<LibroDTO> create(
+    public ResponseEntity<?> create(
             @RequestHeader(LoginHeaders.SESSION_HEADER) String sessionId,
-            @RequestBody LibroDTO libroDTO) throws ServiceException {
+            @RequestBody LibroDTO libroDTO) {
+        try {
+            Usuario usuario = authService.validar(sessionId);
+            if (!"EMPRESA".equals(usuario.getRol())) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", true);
+                errorResponse.put("message", "Acceso denegado: solo usuarios EMPRESA pueden crear libros");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+            }
 
-        Usuario usuario = authService.validar(sessionId);
-        if (!"EMPRESA".equals(usuario.getRol())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            // Validaciones básicas
+            if (libroDTO.getTitulo() == null || libroDTO.getTitulo().trim().isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", true);
+                errorResponse.put("message", "El título del libro es obligatorio");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+
+            if (libroDTO.getNombreCompletoAutor() == null || libroDTO.getNombreCompletoAutor().trim().isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", true);
+                errorResponse.put("message", "El nombre del autor es obligatorio");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+
+            // Inicializar puntuacionPromedio si viene null
+            if (libroDTO.getPuntuacionPromedio() == null) {
+                libroDTO.setPuntuacionPromedio(0.0);
+            }
+
+            LibroDTO created = libroService.create(libroDTO);
+            
+            Map<String, Object> successResponse = new HashMap<>();
+            successResponse.put("success", true);
+            successResponse.put("message", "Libro creado exitosamente");
+            successResponse.put("data", created);
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(successResponse);
+            
+        } catch (ServiceException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", true);
+            errorResponse.put("message", "Error de servicio: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+            
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", true);
+            errorResponse.put("message", "Error de autenticación: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", true);
+            errorResponse.put("message", "Error interno: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-
-        // Sugerencia: si puntuacionPromedio viene null desde la app, tu servicio puede
-        // inicializarla a 0.0 internamente si lo deseas.
-        LibroDTO created = libroService.create(libroDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     // READ ALL - Ambos roles

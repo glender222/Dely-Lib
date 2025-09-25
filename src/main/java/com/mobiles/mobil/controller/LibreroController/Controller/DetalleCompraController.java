@@ -45,12 +45,23 @@ public class DetalleCompraController {
             @RequestBody DetalleCompraDTO detalleCompraDTO) throws ServiceException {
         
         Usuario usuario = authService.validar(sessionId);
-        if (!"EMPRESA".equals(usuario.getRol())) {
+         // 👈 CAMBIO PRINCIPAL: Permitir tanto CLIENTE como EMPRESA
+        if ("CLIENTE".equals(usuario.getRol())) {
+            // Cliente solo puede crear detalles para SUS compras
+            CompraDTO compra = compraService.findById(detalleCompraDTO.getIdCompra());
+            if (!usuario.getIdUsuario().equals(compra.getIdUsuario())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        } else if (!"EMPRESA".equals(usuario.getRol())) {
+            // Solo CLIENTE y EMPRESA pueden crear detalles
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        // EMPRESA puede crear cualquier detalle (caso especial administrativo)
         
         DetalleCompraDTO created = detalleCompraService.create(detalleCompraDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+
     }
 
     // READ ALL - Solo EMPRESA puede ver todos los detalles
