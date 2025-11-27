@@ -16,5 +16,6 @@ public interface CompraMapper extends BaseMappers<Compra, CompraDTO> {
 
     @Override
     @Mapping(source = "usuario.idUsuario", target = "idUsuario")
+    @Mapping(source = "usuario.nombreCompleto", target = "nombreUsuario")
     CompraDTO toDTO(Compra entity);
 }

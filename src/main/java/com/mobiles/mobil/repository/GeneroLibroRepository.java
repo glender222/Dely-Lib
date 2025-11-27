@@ -13,8 +13,14 @@ public interface GeneroLibroRepository extends JpaRepository<GeneroLibro, Long>{
       // Método para verificar si un género tiene libros asociados (DELETE validation)
     boolean existsByGeneroIdGenero(Long idGenero);
     
+    // Método para verificar si un género tiene libros ACTIVOS asociados
+    boolean existsByGeneroIdGeneroAndEstado(Long idGenero, String estado);
+    
     // Método para obtener todos los libros de un género (ENDPOINT MÓVIL)
     List<GeneroLibro> findByGeneroIdGenero(Long idGenero);
+    
+    // Método para obtener solo libros ACTIVOS de un género
+    List<GeneroLibro> findByGeneroIdGeneroAndEstado(Long idGenero, String estado);
 
        
     // Para verificar si un libro tiene géneros asociados (DELETE validation Libro)

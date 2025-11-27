@@ -122,19 +122,22 @@ public class InventarioServiceImpl implements InventarioService {
             Inventario inventario = inventarioRepository.findById(id).get();
             Long idLibro = inventario.getLibro().getIdLibro();
             
-            // 3. Verificar dependencias que impiden el DELETE
+            // 3. Verificar dependencias
             boolean hasCarrito = carritoRepository.existsByLibroIdLibro(idLibro);
-            if (hasCarrito) {
-                throw new ServiceException("Cannot delete inventario: libro exists in shopping carts.");
-            }
-            
             boolean hasCompras = detalleCompraRepository.existsByLibroIdLibro(idLibro);
-            if (hasCompras) {
-                throw new ServiceException("Cannot delete inventario: libro has purchase history.");
-            }
             
-            // 4. Si no tiene dependencias, eliminar
-            inventarioRepository.deleteById(id);
+            // 4. Si tiene dependencias, solo marcar como no disponible (stock = 0)
+            if (hasCarrito || hasCompras) {
+                inventario.setCantidadStock(0);
+                inventarioRepository.save(inventario);
+                System.out.println("⚠️ Inventario marcado como no disponible (stock=0) debido a dependencias");
+            } else {
+                // 5. Si no tiene dependencias, eliminar completamente
+                inventarioRepository.deleteById(id);
+                System.out.println("✅ Inventario eliminado completamente");
+            }
+        } catch (ServiceException e) {
+            throw e;
         } catch (Exception e) {
             throw new ServiceException("Error deleting inventario: " + e.getMessage());
         }

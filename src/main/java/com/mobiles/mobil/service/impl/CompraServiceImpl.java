@@ -77,8 +77,9 @@ public class CompraServiceImpl implements CompraService {
             }
             
             // 4. Crear la compra
+            String now = LocalDateTime.now().format(FORMATTER);
             dto.setEstadoProcesoCompra("PAGADO"); // Estado inicial después del pago
-            dto.setFechaPago(LocalDateTime.now().format(FORMATTER));
+            dto.setFechaPago(now); // Guardar fecha de pago al crear
             
             Compra compra = compraMapper.toEntity(dto);
             Compra savedCompra = compraRepository.save(compra);
@@ -221,23 +222,41 @@ public class CompraServiceImpl implements CompraService {
             }
             
             Compra compra = compraOpt.get();
-            String estadoActual = compra.getEstadoProcesoCompra();
-            
-            // Validar transiciones válidas
-            if (!isValidTransition(estadoActual, nuevoEstado)) {
-                throw new ServiceException("Invalid state transition from " + estadoActual + " to " + nuevoEstado);
-            }
-            
             compra.setEstadoProcesoCompra(nuevoEstado);
             
             // Actualizar fechas según el estado
             String now = LocalDateTime.now().format(FORMATTER);
             switch (nuevoEstado) {
-                case "ENVIADO":
+                case "PAGADO":
+                    // Guardar fecha de pago solo si no existe
+                    if (compra.getFechaPago() == null) {
+                        compra.setFechaPago(now);
+                    }
+                    break;
+                    
+                case "EMPAQUETADO":
+                    // Guardar fecha de empaquetado cuando pasa a este estado
                     compra.setFechaCreacionEmpaquetado(now);
                     break;
+                    
+                case "ENVIADO":
+                    // Si no tiene fecha de empaquetado, ponerla ahora
+                    if (compra.getFechaCreacionEmpaquetado() == null) {
+                        compra.setFechaCreacionEmpaquetado(now);
+                    }
+                    break;
+                    
                 case "ENTREGADO":
+                    // Guardar fecha de entrega cuando se completa
                     compra.setFechaEntrega(now);
+                    // Asegurar que tiene fecha de empaquetado
+                    if (compra.getFechaCreacionEmpaquetado() == null) {
+                        compra.setFechaCreacionEmpaquetado(now);
+                    }
+                    break;
+                    
+                case "CANCELADO":
+                    // No actualizar fechas en cancelación
                     break;
             }
             
@@ -246,13 +265,5 @@ public class CompraServiceImpl implements CompraService {
         } catch (Exception e) {
             throw new ServiceException("Error updating estado: " + e.getMessage());
         }
-    }
-
-    private boolean isValidTransition(String estadoActual, String nuevoEstado) {
-        return switch (estadoActual) {
-            case "PAGADO" -> "ENVIADO".equals(nuevoEstado);
-            case "ENVIADO" -> "ENTREGADO".equals(nuevoEstado);
-            default -> false;
-        };
     }
 }

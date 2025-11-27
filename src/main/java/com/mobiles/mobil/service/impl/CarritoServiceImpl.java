@@ -14,6 +14,7 @@ import com.mobiles.mobil.repository.InventarioRepository;
 import com.mobiles.mobil.repository.LibroRepository;
 import com.mobiles.mobil.repository.UsuarioRepository;
 import com.mobiles.mobil.service.service.CarritoService;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CarritoServiceImpl implements CarritoService {
@@ -175,6 +176,7 @@ public class CarritoServiceImpl implements CarritoService {
         }
     }
 
+    @Transactional
     // MÉTODO ADICIONAL: Limpiar carrito del usuario (después de compra)
     public void clearCarritoByUsuarioId(Long usuarioId) throws ServiceException {
         try {

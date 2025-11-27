@@ -83,13 +83,13 @@ private final GeneroMapper generoMapper;
                 throw new ServiceException("Genero not found with id: " + id);
             }
             
-            // 2. Verificar que no tiene libros asociados (REGLA DE NEGOCIO CRÍTICA)
-            boolean hasBooks = generoLibroRepository.existsByGeneroIdGenero(id);
-            if (hasBooks) {
-                throw new ServiceException("Cannot delete genero: has books associated. Remove books first.");
+            // 2. Verificar que no tiene libros ACTIVOS asociados (REGLA DE NEGOCIO CRÍTICA)
+            boolean hasActiveBooks = generoLibroRepository.existsByGeneroIdGeneroAndEstado(id, "ACTIVO");
+            if (hasActiveBooks) {
+                throw new ServiceException("Cannot delete genero: has active books associated. Remove books first.");
             }
             
-            // 3. Si está vacío, eliminar
+            // 3. Si no tiene libros activos, eliminar
             generoRepository.deleteById(id);
         } catch (Exception e) {
             throw new ServiceException("Error deleting genero: " + e.getMessage());
@@ -106,7 +106,7 @@ private final GeneroMapper generoMapper;
         }
     }
 
-    // MÉTODO NUEVO PARA APP MÓVIL: Obtener libros por género
+    // MÉTODO NUEVO PARA APP MÓVIL: Obtener libros por género (solo ACTIVOS)
     public List<LibroDTO> findLibrosByGeneroId(Long generoId) throws ServiceException {
         try {
             // 1. Verificar que el género existe
@@ -114,8 +114,8 @@ private final GeneroMapper generoMapper;
                 throw new ServiceException("Genero not found with id: " + generoId);
             }
             
-            // 2. Buscar todas las relaciones genero-libro para este género
-            List<GeneroLibro> generoLibros = generoLibroRepository.findByGeneroIdGenero(generoId);
+            // 2. Buscar solo las relaciones ACTIVAS genero-libro para este género
+            List<GeneroLibro> generoLibros = generoLibroRepository.findByGeneroIdGeneroAndEstado(generoId, "ACTIVO");
             
             // 3. Extraer los libros y convertir a DTO
             List<LibroDTO> libros = generoLibros.stream()

@@ -11,6 +11,7 @@ public class DetalleCompraDTO {
     private Long idDetalleCompra;
     private Long idCompra;
     private Long idLibro;
+    private String tituloLibro; // Título del libro
     private Integer cantidad;
     private Double precioUnitario;
     private Double subtotal;

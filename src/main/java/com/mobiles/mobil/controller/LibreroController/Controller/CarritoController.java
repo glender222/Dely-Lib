@@ -5,6 +5,7 @@ import java.util.List;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -156,7 +157,6 @@ public class CarritoController {
         if (!"CLIENTE".equals(usuario.getRol())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        
         carritoService.clearCarritoByUsuarioId(usuario.getIdUsuario());
         return ResponseEntity.noContent().build();
     }

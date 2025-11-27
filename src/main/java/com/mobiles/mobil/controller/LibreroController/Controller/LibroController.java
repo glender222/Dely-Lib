@@ -228,13 +228,28 @@ public class LibroController {
 
             // Ahora imagenPortada guarda el NOMBRE del archivo (no una URL)
             String fileName = libro.getImagenPortada();
-            if (fileName == null || fileName.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            Path filePath = null;
+            
+            // Si tiene nombre de archivo, intentar cargarlo
+            if (fileName != null && !fileName.isEmpty()) {
+                filePath = Paths.get("uploads").resolve(fileName);
             }
-
-            Path filePath = Paths.get("uploads").resolve(fileName);
-            if (!Files.exists(filePath)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            
+            // Si no existe el archivo o no tiene nombre, usar imagen por defecto
+            if (filePath == null || !Files.exists(filePath)) {
+                // Buscar cualquier imagen disponible como fallback
+                Path uploadsDir = Paths.get("uploads");
+                if (Files.exists(uploadsDir)) {
+                    filePath = Files.list(uploadsDir)
+                        .filter(p -> p.toString().toLowerCase().matches(".*\\.(jpg|jpeg|png|gif)$"))
+                        .findFirst()
+                        .orElse(null);
+                }
+                
+                // Si aún no hay imagen, devolver 204 No Content
+                if (filePath == null || !Files.exists(filePath)) {
+                    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+                }
             }
 
             byte[] bytes = Files.readAllBytes(filePath);

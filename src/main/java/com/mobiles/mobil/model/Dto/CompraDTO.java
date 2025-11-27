@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class CompraDTO {
     private Long idCompra;
     private Long idUsuario;
+    private String nombreUsuario; // Nombre del cliente
     private String direccionEnvio;
     private String distrito;
     private String calle;

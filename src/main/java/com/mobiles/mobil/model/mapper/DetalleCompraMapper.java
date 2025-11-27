@@ -22,6 +22,7 @@ public interface DetalleCompraMapper extends BaseMappers<DetalleCompra, DetalleC
     @Override
     @Mapping(source = "compra.idCompra", target = "idCompra")
     @Mapping(source = "libro.idLibro", target = "idLibro")
+    @Mapping(source = "libro.titulo", target = "tituloLibro")
     DetalleCompraDTO toDTO(DetalleCompra entity);
 
     // Métodos auxiliares (por si MapStruct los necesita)

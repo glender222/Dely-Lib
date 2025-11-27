@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -132,7 +133,7 @@ public class CompraController {
         return ResponseEntity.ok(updated);
     }
 
-    // UPDATE ESTADO - Solo EMPRESA puede cambiar estados
+    // UPDATE ESTADO - Solo EMPRESA puede cambiar estados (PUT - usa "estado")
     @PutMapping("/{id}/estado")
     public ResponseEntity<CompraDTO> updateEstado(
             @RequestHeader("X-Session-Id") String sessionId,
@@ -161,6 +162,57 @@ public class CompraController {
         
         CompraDTO updated = compraService.updateEstado(id, nuevoEstado);
         return ResponseEntity.ok(updated);
+    }
+
+    // PATCH ESTADO - Solo EMPRESA puede cambiar estados (usa "estadoProcesoCompra")
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<CompraDTO> patchEstado(
+            @RequestHeader("X-Session-Id") String sessionId,
+            @PathVariable Long id,
+            @RequestBody Map<String, String> estadoRequest) throws ServiceException {
+        
+        Usuario usuario = authService.validar(sessionId);
+        
+        if (!"EMPRESA".equals(usuario.getRol())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Obtener el estado del body (puede venir como "estadoProcesoCompra" o "estado")
+        String nuevoEstado = estadoRequest.get("estadoProcesoCompra");
+        if (nuevoEstado == null) {
+            nuevoEstado = estadoRequest.get("estado");
+        }
+        
+        if (nuevoEstado == null || nuevoEstado.trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                .header("Error", "estadoProcesoCompra is required")
+                .build();
+        }
+        
+        // Validar estados válidos (según tu enum EstadoPedido en Android)
+        if (!List.of("PENDIENTE", "EMPAQUETADO", "ENVIADO", "ENTREGADO", "CANCELADO").contains(nuevoEstado)) {
+            return ResponseEntity.badRequest()
+                .header("Error", "Invalid estado. Must be: PENDIENTE, EMPAQUETADO, ENVIADO, ENTREGADO, CANCELADO")
+                .build();
+        }
+        
+        CompraDTO updated = compraService.updateEstado(id, nuevoEstado);
+        return ResponseEntity.ok(updated);
+    }
+
+    // GET ALL - Solo EMPRESA puede ver todas las compras
+    @GetMapping("/all")
+    public ResponseEntity<List<CompraDTO>> getAllCompras(
+            @RequestHeader("X-Session-Id") String sessionId) throws ServiceException {
+        
+        Usuario usuario = authService.validar(sessionId);
+        
+        if (!"EMPRESA".equals(usuario.getRol())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        List<CompraDTO> compras = compraService.findAll();
+        return ResponseEntity.ok(compras);
     }
 
     // DELETE - Cancelar compra (solo si está en PAGADO)
